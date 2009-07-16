@@ -1,0 +1,29 @@
+GoogleVoiceNotify polls the Google Voice XML pages (http://posttopic.com/topic/google-voice-add-on-development), and sends notifications to any number of registered listeners.
+
+At the moment, the Notifier only supports SMS notifications, but adding voicemail, missed calls, etc, is just a matter of writing scrapers for those as well.
+
+Requires:
+1. BeautifulSoup (http://www.crummy.com/software/BeautifulSoup/)
+
+I've also included a sample client for GoogleVoiceNotify that sends notifications to Prowl, which sends iPhone push notifications.
+
+Usage:
+
+from googlevoicenotify import GoogleVoiceNotify
+gv = GoogleVoiceNotify('username', 'password')
+gv.check()
+
+Though you'll probably want to register at least one listener:
+
+class PrintListener(object):
+	def on_notification(self, event, name, message):
+		print "(%s) %s said %s" % (event, name, message)
+
+from googlevoicenotify import GoogleVoiceNotify
+import time
+print_listener = PrintListener()
+gv = GoogleVoiceNotify('your_username', 'your_password', listeners=print_listener)
+while True:
+	gv.check()
+	time.sleep(60)
+
