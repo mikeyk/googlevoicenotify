@@ -8,7 +8,6 @@ by Mike Krieger <mikekrieger@gmail.com>
 from cookielib import CookieJar
 import simplejson
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
-import httplib2
 import urllib2
 import cPickle as pickle
 
@@ -37,8 +36,9 @@ class GoogleVoiceNotify(object):
 			from collections import defaultdict
 			self.convo_threads = defaultdict(set)
 		"""
-			Register a list of callers that print out notifications.
-			Notifiers must implement a 'notify' method
+			Register a list of listeners that print out notifications.
+			Listeners must implement an 'on_notification' method,
+			of the format on_notification(event, from_name, message)
 		"""
 		if type(listeners) in (tuple, list):
 			self.listeners = listeners
@@ -92,7 +92,7 @@ class GoogleVoiceNotify(object):
 						if from_name != 'Me':
 							if self.listeners and len(self.listeners) > 0:
 								for listener in self.listeners:
-									listener.notify(from_name, message_txt)
+									listener.on_notification('SMS', from_name, message_txt)
 						# debug: print message_txt
 		out_fl = open('pickled-updates', 'w')
 		pickle.dump(self.convo_threads, out_fl)
