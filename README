@@ -5,7 +5,11 @@ At the moment, the Notifier only supports SMS notifications, but adding voicemai
 Requires:
 1. BeautifulSoup (http://www.crummy.com/software/BeautifulSoup/)
 
-I've also included a sample client for GoogleVoiceNotify that sends notifications to Prowl, which sends iPhone push notifications.
+I've also included a sample client for GoogleVoiceNotify that sends notifications to Prowl (http://prowl.weks.net/), which sends iPhone push notifications.
+
+To use the Prowl listener, you need to create two files in the same directory:
+prowlkey (should just contain your Prowl API key)
+credentials (your Google Voice username and password, separated by a space)
 
 Usage:
 
