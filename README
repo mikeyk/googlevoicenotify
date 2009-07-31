@@ -4,6 +4,7 @@ At the moment, the Notifier only supports SMS notifications, but adding voicemai
 
 Requires:
 1. BeautifulSoup (http://www.crummy.com/software/BeautifulSoup/)
+2. prowlpy (http://github.com/jacobb/prowlpy/tree/master) (which also has its own dependencies such as httplib2)
 
 I've also included a sample client for GoogleVoiceNotify that sends notifications to Prowl (http://prowl.weks.net/), which sends iPhone push notifications.
 
