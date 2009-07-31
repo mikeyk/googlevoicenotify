@@ -12,15 +12,14 @@ import urllib2
 import cPickle as pickle
 
 class GoogleVoiceNotify(object):
-	def __init__(self, username, password, listeners=None):
+	def __init__(self, username, password, listeners=None, picklefile='/tmp/pickled-updates'):
 		"""
 		Initialize the Google Voice Notifier 
 		"""
-
 		# GV username and pass
 		self.username = username
 		self.password = password
-	    
+		self.picklefile = picklefile	
 		self.headers = [("Content-type", "application/x-www-form-urlencoded"),
 														('User-Agent', 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'),
 														("Accept", "application/xml")]
@@ -94,7 +93,7 @@ class GoogleVoiceNotify(object):
 								for listener in self.listeners:
 									listener.on_notification('SMS', from_name, message_txt)
 						# debug: print message_txt
-		out_fl = open('pickled-updates', 'w')
+		out_fl = open(self.picklefile, 'w')
 		pickle.dump(self.convo_threads, out_fl)
 
 	def check(self):
