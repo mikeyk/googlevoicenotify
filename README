@@ -10,7 +10,9 @@ I've also included a sample client for GoogleVoiceNotify that sends notification
 
 To use the Prowl listener, you need to create two files in the same directory:
 prowlkey (should just contain your Prowl API key)
-credentials (your Google Voice username and password, separated by a space)
+(optionally) credentials (your Google Voice username and password, separated by a space)
+
+If you don't make a credentials file, then the prowlgooglevoice.py script will prompt you for a username/password on the command line
 
 then just do:
 
