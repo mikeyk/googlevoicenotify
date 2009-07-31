@@ -99,5 +99,7 @@ class GoogleVoiceNotify(object):
 
 	def check(self):
 		feed = self.get_inbox()
+		feed = feed.replace("<![CDATA[", "")
+		feed = feed.replace("]]>", "")
 		self.parse_result(feed)
 
