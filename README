@@ -8,11 +8,14 @@ Requires:
 
 I've also included a sample client for GoogleVoiceNotify that sends notifications to Prowl (http://prowl.weks.net/), which sends iPhone push notifications.
 
-To use the Prowl listener, you need to create two files in the same directory:
-prowlkey (should just contain your Prowl API key)
-(optionally) credentials (your Google Voice username and password, separated by a space)
+To use the Prowl listener, you need to create two files in your home directory.
+~/.prowlapi (should just contain your Prowl API key)
+(optionally) ~/.gvnotify (a config file that should look as follows):
+gvid=yourusername
+password=yourpassword
+sleep=sleeptime (in seconds)
 
-If you don't make a credentials file, then the prowlgooglevoice.py script will prompt you for a username/password on the command line
+If you don't make a credentials file, then the prowlgooglevoice.py script will prompt you for a username/password on the command line and default to 60 seconds.
 
 then just do:
 
