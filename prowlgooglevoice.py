@@ -1,3 +1,5 @@
+from getpass import getpass
+from os import path
 from googlevoicenotify import GoogleVoiceNotify
 from time import sleep
 
@@ -16,7 +18,11 @@ class PrintListener:
 if __name__ == '__main__':
 	prowl_listener = ProwlListener()
 	print_listener = PrintListener()
-	name, passwd = file("credentials", "r").read().split()
+	if path.exists("credentials"):
+		name, passwd = file("credentials", "r").read().split()
+	else:
+		name = raw_input('Google username: ')
+		passwd = getpass('Password: ')
 	sleep_time = 60 
 	gv = GoogleVoiceNotify(name, passwd, listeners=(prowl_listener, print_listener))
 	while True:
