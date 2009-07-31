@@ -21,7 +21,9 @@ then just do:
 
 python prowlgooglevoice.py
 
-in the same folder where the prowlgooglevoice.py, googlevoicenotify.py, prowlkey, and credentials files are
+I've also included a bash script that launches/controls the notifier, written by James Bair (in tools/prowl-gv.sh) and a Python daemon written by Brian Baughman (in tools/gv2prowldaemon.py)
+
+in the same folder where the prowlgooglevoice.py, googlevoicenotify.py files are.
 
 Usage:
 
