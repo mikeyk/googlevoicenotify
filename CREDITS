@@ -1,0 +1,7 @@
+Original code written by Mike Krieger <mikekrieger+prowlvoice@gmail.com>
+
+Thanks to:
+
+James Bair for the shell script
+Brian Baughman for the python daemon
+Chris Bellow for updating the CSS selector and for adding voicemail support

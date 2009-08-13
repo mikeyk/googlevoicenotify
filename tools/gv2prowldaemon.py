@@ -4,7 +4,6 @@
 #  gv2prowl
 #
 #  Created by Brian Baughman on 7/30/09.
-#  Copyright (c) 2009 Brian Baughman. All rights reserved.
 #
 from googlevoicenotify import GoogleVoiceNotify
 from time import sleep
