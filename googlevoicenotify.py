@@ -28,7 +28,7 @@ class GoogleVoiceNotify(object):
 		# if a previous session quit but saved state, load it to
 		# avoid double notifications
 		try:
-			cached_fl = open('pickled-updates', 'r')
+			cached_fl = open(picklefile, 'r')
 			self.convo_threads = pickle.load(cached_fl)
 			cached_fl.close()
 		except Exception, e:
@@ -73,7 +73,7 @@ class GoogleVoiceNotify(object):
 		sp = BeautifulSoup(cleaned)
 		
 		# parse SMS threads
-		sms = sp.findAll('div', attrs={'class':'gc-message gc-message-sms'})
+		sms = sp.findAll('div', attrs={'class':'goog-flat-button gc-message gc-message-sms'})
 		for thread in sms:
 			id = thread['id']
 			# find all message rows
@@ -93,12 +93,48 @@ class GoogleVoiceNotify(object):
 								for listener in self.listeners:
 									listener.on_notification('SMS', from_name, message_txt)
 						# debug: print message_txt
-		out_fl = open(self.picklefile, 'w')
-		pickle.dump(self.convo_threads, out_fl)
-
+		
+	def get_voicemails(self):
+		# if we haven't acquired cookies yet
+		if len(self.cookies) == 0:
+			 # first do the login POST
+			login = self.do_req('https://www.google.com/accounts/ServiceLoginBoxAuth?Email=%s&Passwd=%s&service=grandcentral' % (self.username, self.password)).read()
+			 # second step is to pass the cookie check
+			cookie_check = self.do_req('https://www.google.com/accounts/CheckCookie?chtml=LoginDoneHtml').read()
+		html = self.do_req('https://www.google.com/voice/inbox/recent/voicemail/').read()
+		sp = BeautifulStoneSoup(html)
+		return str(sp.response.html.contents[0])
+	def parse_voicemails(self, result):
+		cleaned = result.replace('</div></div></div></div></div>', '</div></div></div></div>')
+		sp = BeautifulSoup(cleaned)
+		voicemails = sp.findAll('div', attrs={'class':'goog-flat-button gc-message gc-message-unread'})
+		for voicemail in voicemails:
+			id = voicemail['id']
+			# find all voicemail rows
+			rows = voicemail.findAll('table', attrs={'class':'gc-message-tbl'})
+			for message in rows:
+				from_name = message.findAll('a', attrs={'class':'gc-under gc-message-name-link'})[0].string.strip()
+				span_array = message.findAll('div', attrs={'class':'gc-message-message-display'})[0].findAll('span', attrs={'class':'gc-word-high'})
+				voicemail_transcript_array = []
+				for word in span_array:
+					voicemail_transcript_array.append(word.string.strip())
+				voicemail_transcript = ' '.join(voicemail_transcript_array)
+				identifier = from_name + ' ' + voicemail_transcript
+				if identifier not in self.convo_threads[id]:
+					self.convo_threads[id].add(identifier)
+					if from_name != 'Me':
+						if self.listeners and len(self.listeners) > 0:
+							for listener in self.listeners:
+								listener.on_notification('Voicemail', from_name, voicemail_transcript)
+		
 	def check(self):
 		feed = self.get_inbox()
 		feed = feed.replace("<![CDATA[", "")
 		feed = feed.replace("]]>", "")
 		self.parse_result(feed)
-
+		vmfeed = self.get_voicemails()
+		vmfeed = vmfeed.replace("<![CDATA[", "")
+		vmfeed = vmfeed.replace("]]>", "")
+		self.parse_voicemails(vmfeed)
+		out_fl = open(self.picklefile, 'w')
+		pickle.dump(self.convo_threads, out_fl)

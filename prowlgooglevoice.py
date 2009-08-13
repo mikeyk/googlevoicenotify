@@ -60,6 +60,8 @@ if __name__ == '__main__':
 		picklefile = environ['HOME']+'/.gvcache')
 	del passwd
 	while True:
+		# uncomment below for debugging
+		# print 'sleeping...'
 		gv.check()
 		sleep(sleep_time)
 
