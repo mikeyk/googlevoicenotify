@@ -47,6 +47,7 @@ if __name__ == '__main__':
 		prowl_listener = ProwlListener()
 		print_listener = PrintListener()
 	except Exception, e:
+		print e
 		print 'Could not load ProwlListener...exiting.'
 		sys.exit()
 	cfile = environ['HOME']+'/.gvnotify'

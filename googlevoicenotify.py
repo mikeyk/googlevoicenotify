@@ -10,6 +10,7 @@ import simplejson
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import urllib2
 import cPickle as pickle
+from httplib import IncompleteRead
 
 class GoogleVoiceNotify(object):
 	def __init__(self, username, password, listeners=None, picklefile='/tmp/pickled-updates'):
@@ -62,7 +63,14 @@ class GoogleVoiceNotify(object):
 			login = self.do_req('https://www.google.com/accounts/ServiceLoginBoxAuth?Email=%s&Passwd=%s&service=grandcentral' % (self.username, self.password)).read()
 			 # second step is to pass the cookie check
 			cookie_check = self.do_req('https://www.google.com/accounts/CheckCookie?chtml=LoginDoneHtml').read()
-		sms = self.do_req('https://www.google.com/voice/inbox/recent/sms/').read()
+		
+		try:
+			sms = self.do_req('https://www.google.com/voice/inbox/recent/sms/').read()
+			sp = BeautifulStoneSoup(sms)
+			return unicode(sp.response.html.contents[0])
+		# This randomly fails for reasons unknown
+		except IncompleteRead, e:
+			return None
 		sp = BeautifulStoneSoup(sms)
 		return str(sp.response.html.contents[0])
 
@@ -101,7 +109,13 @@ class GoogleVoiceNotify(object):
 			login = self.do_req('https://www.google.com/accounts/ServiceLoginBoxAuth?Email=%s&Passwd=%s&service=grandcentral' % (self.username, self.password)).read()
 			 # second step is to pass the cookie check
 			cookie_check = self.do_req('https://www.google.com/accounts/CheckCookie?chtml=LoginDoneHtml').read()
-		html = self.do_req('https://www.google.com/voice/inbox/recent/voicemail/').read()
+		try:
+			html = self.do_req('https://www.google.com/voice/inbox/recent/voicemail/').read()
+			sp = BeautifulStoneSoup(html)
+			return str(sp.response.html.contents[0])
+		# This randomly fails for reasons unknown
+		except IncompleteRead, e:
+			return None
 		sp = BeautifulStoneSoup(html)
 		return str(sp.response.html.contents[0])
 	def parse_voicemails(self, result):
@@ -113,15 +127,23 @@ class GoogleVoiceNotify(object):
 			# find all voicemail rows
 			rows = voicemail.findAll('table', attrs={'class':'gc-message-tbl'})
 			for message in rows:
-				from_name = message.findAll('a', attrs={'class':'gc-under gc-message-name-link'})[0].string.strip()
+				try:
+					from_name = message.findAll('a', attrs={'class':'gc-under gc-message-name-link'})[0].string.strip()
+				except:
+					from_name = message.findAll('span', attrs={'title':''})[0].string.strip()
 				span_array = message.findAll('div', attrs={'class':'gc-message-message-display'})[0].findAll('span', attrs={'class':'gc-word-high'})
 				voicemail_transcript_array = []
 				for word in span_array:
 					voicemail_transcript_array.append(word.string.strip())
 				voicemail_transcript = ' '.join(voicemail_transcript_array)
-				identifier = from_name + ' ' + voicemail_transcript
-				if identifier not in self.convo_threads[id]:
-					self.convo_threads[id].add(identifier)
+				empty_voicemail_transcript = False
+				if voicemail_transcript == '' and not self.convo_threads.has_key(id):
+					empty_voicemail_transcript = True
+					self.convo_threads[id].add('sentinelemptyvalue')
+				elif self.convo_threads.has_key(id) and self.convo_threads[id] == set(['sentinelemptyvalue']):
+					del self.convo_threads[id]
+				if not self.convo_threads.has_key(id) and not empty_voicemail_transcript:
+					self.convo_threads[id].add(id)
 					if from_name != 'Me':
 						if self.listeners and len(self.listeners) > 0:
 							for listener in self.listeners:
@@ -129,12 +151,14 @@ class GoogleVoiceNotify(object):
 		
 	def check(self):
 		feed = self.get_inbox()
-		feed = feed.replace("<![CDATA[", "")
-		feed = feed.replace("]]>", "")
-		self.parse_result(feed)
-		vmfeed = self.get_voicemails()
-		vmfeed = vmfeed.replace("<![CDATA[", "")
-		vmfeed = vmfeed.replace("]]>", "")
-		self.parse_voicemails(vmfeed)
-		out_fl = open(self.picklefile, 'w')
-		pickle.dump(self.convo_threads, out_fl)
+		if feed != None:
+			feed = feed.replace("<![CDATA[", "")
+			feed = feed.replace("]]>", "")
+			self.parse_result(feed)
+			vmfeed = self.get_voicemails()
+			if vmfeed != None:
+				vmfeed = vmfeed.replace("<![CDATA[", "")
+				vmfeed = vmfeed.replace("]]>", "")
+				self.parse_voicemails(vmfeed)
+				out_fl = open(self.picklefile, 'w')
+				pickle.dump(self.convo_threads, out_fl)
