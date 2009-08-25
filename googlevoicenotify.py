@@ -71,8 +71,6 @@ class GoogleVoiceNotify(object):
 		# This randomly fails for reasons unknown
 		except IncompleteRead, e:
 			return None
-		sp = BeautifulStoneSoup(sms)
-		return str(sp.response.html.contents[0])
 
 	def parse_result(self, result):
 		# the Voice HTML seems to have an extra closing div?
@@ -112,12 +110,10 @@ class GoogleVoiceNotify(object):
 		try:
 			html = self.do_req('https://www.google.com/voice/inbox/recent/voicemail/').read()
 			sp = BeautifulStoneSoup(html)
-			return str(sp.response.html.contents[0])
+			return unicode(sp.response.html.contents[0])
 		# This randomly fails for reasons unknown
 		except IncompleteRead, e:
 			return None
-		sp = BeautifulStoneSoup(html)
-		return str(sp.response.html.contents[0])
 	def parse_voicemails(self, result):
 		cleaned = result.replace('</div></div></div></div></div>', '</div></div></div></div>')
 		sp = BeautifulSoup(cleaned)
